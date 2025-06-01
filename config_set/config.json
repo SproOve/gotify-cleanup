@@ -1,7 +1,12 @@
 {
   "base_url": "http://your-gotify-url:8088",
-  "gotify_key": "YOUR_GOTIFY_KEY",
+  "gotify_keys": [
+    { "key": "YOUR_GOTIFY_KEY", "internalId": 1 },
+    { "key": "ANOTHER_GOTIFY_KEY", "internalId": 2 }
+  ],
+  "intervalInSeconds": 300,
   "apps": [
-    { "appname": "your-app", "msgs2keep": 3 }
+    { "appname": "your-app", "msgs2keep": 3, "gotify_key": 1 },
+    { "appname": "another-app", "msgs2keep": 5, "gotify_key": 1 }
   ]
 }
