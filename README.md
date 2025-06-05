@@ -60,10 +60,10 @@ services:
     container_name: gotify-cleanup
     restart: unless-stopped
     volumes:
-      - gotify_config:/app/config
+      - gotify_cleanup_config:/app/config
 volumes:
-    gotify_config:
-      name: gotify_config
+    gotify_cleanup_config:
+      name: gotify_cleanup_config
 
 ```
 
