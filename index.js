@@ -2,62 +2,80 @@ const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
 
-// === Konfiguration laden ===
-const configPath = path.join(__dirname, "config.json");
+// === Load configuration ===
+const configPath = path.join(__dirname, "config", "config.json");
+
 const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
 const BASE_URL = config.base_url;
 const gotifyKeys = config.gotify_keys;
 const apps = config.apps;
 
-// === Hilfsfunktion: Key für App holen ===
+// === Helper function: Get key for app ===
 function getGotifyKeyForApp(app) {
-  const keyObj = gotifyKeys.find(k => k.internalId === app.gotify_key);
-  if (!keyObj) throw new Error(`Kein Gotify-Key für App "${app.appname}" gefunden!`);
+  const keyObj = gotifyKeys.find((k) => k.internalId === app.gotify_key);
+  if (!keyObj)
+    throw new Error(`No Gotify key found for app "${app.appname}"!`);
   return keyObj.key;
 }
 
-// === Hauptfunktion ===
+// === Main function ===
 async function main() {
   try {
-    // 1. Apps von API abrufen (nutze den Key der ersten App für die Initialabfrage)
-    const firstKey = getGotifyKeyForApp(apps[0]);
-    const api = axios.create({
-      baseURL: BASE_URL,
-      headers: { "X-Gotify-Key": firstKey },
-    });
-    const { data: apiApps } = await api.get("/application");
+    // 1. Collect all apps and messages
+    let allApiApps = [];
+    let allMessages = [];
+    const seenAppIds = new Set();
+    const seenMsgIds = new Set();
 
-    // 2. Apps mit ID verknüpfen
+    for (const app of apps) {
+      const appKey = getGotifyKeyForApp(app);
+      const api = axios.create({
+        baseURL: BASE_URL,
+        headers: { "X-Gotify-Key": appKey },
+      });
+      // Fetch apps
+      const { data: apiApps } = await api.get("/application");
+      for (const apiApp of apiApps) {
+        if (!seenAppIds.has(apiApp.id)) {
+          allApiApps.push(apiApp);
+          seenAppIds.add(apiApp.id);
+        }
+      }
+      // Fetch messages
+      const { data: messagesData } = await api.get("/message");
+      for (const msg of messagesData.messages) {
+        if (!seenMsgIds.has(msg.id)) {
+          allMessages.push(msg);
+          seenMsgIds.add(msg.id);
+        }
+      }
+    }
+
+    // 2. Link apps with ID
     apps.forEach((app) => {
-      const match = apiApps.find((apiApp) => apiApp.name === app.appname);
+      const match = allApiApps.find((apiApp) => apiApp.name === app.appname);
       if (match) {
         app.id = match.id;
       }
     });
 
-    // 3. Messages abrufen (nutze wieder den Key der ersten App)
-    const { data: allMessages } = await api.get("/message");
-
-    // 4. Messages den Apps zuordnen
+    // 3. Assign messages to apps
     apps.forEach((app) => {
       if (!app.id) return;
-      const messages = allMessages.messages
+      const messages = allMessages
         .filter((msg) => msg.appid === app.id)
-        .sort((a, b) => new Date(b.date) - new Date(a.date)); // nach Datum absteigend
-
+        .sort((a, b) => new Date(b.date) - new Date(a.date)); // descending by date
       app.messages = messages;
     });
 
-    // 5. Alte Messages löschen (hier pro App den richtigen Key nutzen)
+    // 4. Delete old messages (use the correct key per app)
     for (const app of apps) {
       if (!app.messages) continue;
-
       const appKey = getGotifyKeyForApp(app);
       const appApi = axios.create({
         baseURL: BASE_URL,
         headers: { "X-Gotify-Key": appKey },
       });
-
       const messagesToDelete = app.messages.slice(app.msgs2keep);
       for (const msg of messagesToDelete) {
         try {
@@ -73,10 +91,14 @@ async function main() {
     }
   } catch (err) {
     console.error(
-      "Fehler bei der Verarbeitung:",
+      "Error during processing:",
       err.response?.data || err.message
     );
   }
 }
 
+// === Start and set interval for continuous execution ===
 main();
+setInterval(() => {
+  main();
+}, 1000 * config.intervalInSeconds);

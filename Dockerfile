@@ -1,14 +1,11 @@
 FROM node:20-alpine
-
-WORKDIR /usr/src/app
-
-COPY package*.json ./
-RUN npm install
-
-COPY . .
-
-COPY start.sh .
-RUN chmod +x start.sh
-
-# Startscript führt alles aus (inkl. node index.js)
-CMD ["./start.sh"]
+WORKDIR /app
+RUN apk add --no-cache nano
+COPY index.js ./
+COPY package.json ./
+COPY config_set ./config_set
+RUN mkdir -p config
+COPY entrypoint.sh ./
+RUN chmod +x entrypoint.sh
+RUN npm install --production
+ENTRYPOINT ["./entrypoint.sh"]
