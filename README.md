@@ -1,4 +1,7 @@
 # Gotify Cleanup
+<div style="text-align: center;">
+<img src="assets/logo.png" alt="Alt Text" width="200" height="200">
+</div>
 
 This Node.js script automatically deletes old messages from your Gotify server for specified apps, keeping only the most recent ones per app.
 
@@ -38,7 +41,13 @@ Example:
 - `intervalInSeconds`: How often the cleanup runs
 - `apps`: List of apps to clean up, with how many messages to keep and which key to use
 
-## Usage
+### Getting your keys for your config
+The visibility of your apps is user-based in gotify, so you need at least one gotify_key for your Instance. If an application is registered to another user on your instance, you need a second one, and so on.
+Heres, where you can find the values:
+
+<img src="assets/keys.png" alt="Alt Text">
+
+## Deployment
 
 ### Standalone
 Install dependencies and run:
