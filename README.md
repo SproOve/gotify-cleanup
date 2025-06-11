@@ -9,7 +9,7 @@ This Node.js script automatically deletes old messages from your Gotify server f
 ## Features
 
 - Periodically fetches all apps and messages from Gotify
-- Keeps only the latest X messages per app (configurable)
+- Supports multiple modes, e.g. keep only X newest messages, delete by searchstring, uptime-kuma special mode and more
 - Supports multiple Gotify API keys (=multiple Users) and apps
 - Can be run standalone or as a Docker container
 
