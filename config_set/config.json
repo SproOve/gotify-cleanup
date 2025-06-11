@@ -6,7 +6,34 @@
   ],
   "intervalInSeconds": 300,
   "apps": [
-    { "appname": "your-app", "msgs2keep": 3, "gotify_key": 1 },
-    { "appname": "another-app", "msgs2keep": 5, "gotify_key": 1 }
+    {
+      "appname": "your-app",
+      "mode": "keep_amount",
+      "msgs2keep": 3,
+      "gotify_key": 1
+    },
+    {
+      "appname": "another-app-for -a-different-user",
+      "mode": "keep_amount",
+      "msgs2keep": 5,
+      "gotify_key": 2
+    },
+    {
+      "appname": "your-third-app-with-unique-mode",
+      "mode": "keep_unique",
+      "gotify_key": 2
+    },
+    {
+      "appname": "your-fourth-app-with-substring-delete-mode-on",
+      "mode": "delete_filtered",
+      "substrings": ["delete explicitly", "only me"],
+      "gotify_key": 1
+    },
+    {
+      "appname": "your-fourth-app-with-substring-keep-mode-on",
+      "mode": "keep_filtered",
+      "substrings": ["keep", "only me"],
+      "gotify_key": 1
+    }
   ]
 }
